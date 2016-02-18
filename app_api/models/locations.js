@@ -79,15 +79,15 @@ mongoose.model('Location', locationSchema);
 // })
 
 // db.locations.update({
-// 	name: 'Caffe Paradiso'
+// 	name: 'Caffe Bene'
 // }, {
 // 	$push: {
 // 		reviews: {
-// 			author: 'Vicki Prince',
-// 			id: ObjectId(),
+// 			author: 'Clayton Locher',
+// 			_id: ObjectId(),
 // 			rating: 3,
-// 			timestamp: new Date('May 16, 2015'),
-// 			reviewText: "The coffe is a bit expensive, but the atmosphere is always fun and vibrant."
+// 			timestamp: new Date('September 19, 2015'),
+// 			reviewText: "Caffe Bene is always a nice place to relax or get some work done!"
 // 		}
 // 	}
-// }) 
+// })
