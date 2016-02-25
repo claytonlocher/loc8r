@@ -104,8 +104,6 @@ module.exports.locationsCreate = function(req, res) {
   });
 };
 
-// Caffe Bene _id = 56b8ff72a084d24a862e327b
-
 module.exports.locationsReadOne = function(req, res) {
   if (req.params && req.params.locationid) {
     Loc
@@ -180,5 +178,21 @@ module.exports.locationsUpdateOne = function(req, res) {
 };
 
 module.exports.locationsDeleteOne = function(req, res) {
-  sendJsonResponse(res, 200, {"status": "success"});
+  var locationid = req.params.locationid;
+  if (locationid) {
+    Loc
+      .findByIdAndRemove(locationid)
+      .exec(function(err, location) {
+        if (err) {
+          sendJsonResponse(res, 404, err);
+          return;
+        }
+        sendJsonReponse(res, 204, null);
+      }
+    );
+  } else {
+    sendJsonResponse(res, 404, {
+      "message": "No locationid"
+    });
+  }
 };
