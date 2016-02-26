@@ -205,7 +205,7 @@ module.exports.reviewsDeleteOne = function(req, res) {
         return;
       }
       if (location.reviews && location.reviews.length > 0) {
-        if (!location.reviews.id(req.params.reviewid) {
+        if (!location.reviews.id(req.params.reviewid)) {
           sendJsonResponse(res, 404, {
             "message": "reviewidnotfound"
           });
@@ -219,11 +219,12 @@ module.exports.reviewsDeleteOne = function(req, res) {
               sendJsonResponse(res, 204, null);
             }
           });
+        } 
         } else {
           sendJsonResponse(res, 404, {
             "message": "No review to delete"
           });
-        });
       }
-    });
+    }
+  );
 };

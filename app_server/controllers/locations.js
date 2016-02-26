@@ -1,6 +1,14 @@
+var request = require('request');
 
-/* GET 'Home' page */
-module.exports.homelist = function(req, res) {
+var apiOptions = {
+	server: 'http://localhost:3000'
+};
+
+if (process.env.NODE_ENV === 'production') {
+	apiOptions.server = 'https://getting-mean-loc8r.herokuapp.com';
+}
+
+var renderHomepage = function(req, res) {
 	res.render('locations-list', {
 		title: 'Loc8r - Find a place to work with wifi',
 		pageHeader: {
@@ -29,6 +37,24 @@ module.exports.homelist = function(req, res) {
 			facilities: ['Food', 'Premium wifi'],
 			distance: '250m'
 		}]
+	});
+};
+
+/* GET 'Home' page */
+module.exports.homelist = function(req, res) {
+	var requestOptions, path;
+	path = '/api/locations';
+	requestOptions = {
+		url: apiOptions.server + path,
+		method: 'GET',
+		json: {},
+		qs: {
+			lng: -88.227779,
+			lat: 40.105754
+		}
+	};
+	request(requestOptions, function(err, response, body) {
+		renderHomepage(req, res);
 	});
 };
 
