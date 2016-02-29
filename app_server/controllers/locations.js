@@ -8,7 +8,16 @@ if (process.env.NODE_ENV === 'production') {
 	apiOptions.server = 'https://getting-mean-loc8r.herokuapp.com';
 }
 
-var renderHomepage = function(req, res) {
+var renderHomepage = function(req, res, responseBody) {
+	var message;
+	if (!(responseBody instanceof Array)) {
+		message = 'API lookup error';
+		responseBody = [];
+	} else {
+		if (!responseBody.length) {
+			message = 'No places found nearby';
+		}
+	}
 	res.render('locations-list', {
 		title: 'Loc8r - Find a place to work with wifi',
 		pageHeader: {
@@ -18,25 +27,8 @@ var renderHomepage = function(req, res) {
 		sidebar: "Looking for wifi and a seat? Loc8r helps you find places to work when out"
 		+ " and about. Perhaps with coffee, cake or a pint?" 
 		+ " Let Loc8r help you find the place you're looking for.",
-		locations: [{
-			name: 'Starcups',
-			address: '125 High Street, Reading, RG6 1PS',
-			rating: 3,
-			facilities: ['Hot drinks', 'Food', 'Premium wifi'],
-			distance: '100m'
-		},{
-			name: 'Cafe Hero',
-			address: '125 High Street, Reading, RG6 1PS',
-			rating: 4,
-			facilities: ['Hot drinks', 'Food', 'Premium wifi'],
-			distance: '200m'
-		},{
-			name: 'Burger Queen',
-			address: '125 High Street, Reading, RG6 1PS',
-			rating: 2,
-			facilities: ['Food', 'Premium wifi'],
-			distance: '250m'
-		}]
+		locations: responseBody,
+		message: message
 	});
 };
 
@@ -53,10 +45,33 @@ module.exports.homelist = function(req, res) {
 			lat: 40.105754
 		}
 	};
-	request(requestOptions, function(err, response, body) {
-		renderHomepage(req, res);
-	});
+	request(
+		requestOptions,
+		function(err, response, body) {
+			var i, data;
+			data = body;
+			if (response.statusCode === 200 && data.length) {
+				for (i=0; i<data.length; i++) {
+					data[i].distance = formatDistance(data[i].distance);
+				}
+			}
+			renderHomepage(req, res, data);
+		}
+	);
 };
+
+var formatDistance = function (distance) {
+	var numDistance, unit;
+	// MongoDB returns GeoJSON distance in meters
+	if (distance > 1000) {
+		numDistance = parseFloat(distance).toFixed(1);
+		unit = 'km';
+	} else {
+		numDistance = parseInt(distance, 10);
+		unit = 'm';
+	}
+	return numDistance + unit;
+}
 
 /* GET 'Location Info' page */
 module.exports.locationInfo = function(req, res) {

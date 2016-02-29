@@ -39,24 +39,26 @@ module.exports.locationsListByDistance = function(req, res) {
   };
   var geoOptions = {
     spherical: true,
-    // maxDistance: theEarth.getRadsFromDistance(1000),
+    maxDistance: 200000,
     num: 10
   };
-  if (!lng || !lat) {
+  if ((!lng && lng !== 0) || (!lat && lat !== 0)) {
+    console.log('ENTERED!')
     sendJsonResponse(res, 404, {
       "message": "lng and lat query parameters are required"
     });
+    return;
   }
   Loc.geoNear(point, geoOptions, function(err, results, stats) {
     var locations = [];
-    console.log(results)
     if (err) {
       console.log(err);
       sendJsonResponse(res, 404, err);
     } else {
       results.forEach(function(doc) {
         locations.push({
-          distance: theEarth.getDistanceFromRads(doc.dis),
+          // MongoDB returns GeoJSON distance in meters
+          distance: doc.dis,
           name: doc.obj.name,
           address: doc.obj.address,
           rating: doc.obj.rating,
