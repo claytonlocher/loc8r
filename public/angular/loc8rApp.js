@@ -36,6 +36,36 @@ var locationListCtrl = function ($scope) {
   }
 };
 
+var isNumeric = function(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+};
+
+var formatDistance = function() {
+  return function (distance) {
+    var numDistance, unit;
+    // MongoDB returns GeoJSON distance in meters
+    if (distance > 1) {
+      numDistance = parseFloat(distance).toFixed(1);
+      unit = 'km';
+    } else {
+      numDistance = parseInt(distance * 1000, 10);
+      unit = 'm';
+    }
+    return numDistance + unit;
+  }
+};
+
+var ratingStars = function() {
+  return {
+    scope: {
+      thisRating: '=rating'
+    },
+    templateUrl: '/angular/rating-stars.html'
+  };
+};
+
 angular
   .module('loc8rApp')
-  .controller('locationListCtrl', locationListCtrl);
+  .controller('locationListCtrl', locationListCtrl)
+  .filter('formatDistance', formatDistance)
+  .directive('ratingStars', ratingStars);
