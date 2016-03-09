@@ -2,38 +2,40 @@
 
 angular.module('loc8rApp', []);
 
-var locationListCtrl = function ($scope) {
-  $scope.data = {
-    locations: [{
-      name: 'Starbucks',
-      address: 'Illini Union (Courtyard Cafe)',
-      rating: 3,
-      facilities: ['Hot drinks', 'Food', 'Premium wifi'],
-      distance: '0.2947493',
-      _id: '53729234a8822893uha09uf0'
-    }, {
-      name: 'Espresso Royale',
-      address: 'Sixth and Daniel',
-      rating: 4,
-      facilities: ['Hot drinks', 'Food', 'Premium wifi'],
-      distance: '0.6739294',
-      _id: '53729234a8822893uha09uf1'
-    }, {
-      name: 'Dunkin Donuts',
-      address: 'Sixth and Green',
-      rating: 2,
-      facilities: ['Hot drinks', 'Food', 'Premium wifi'],
-      distance: '0.83728021',
-      _id: '53729234a8822893uha09uf2'
-    }, {
-      name: 'Murphy\'s Pub',
-      address: 'Sixth and Green',
-      rating: 3,
-      facilities: ['Food', 'Premium wifi'],
-      distance: '0.8294817',
-      _id: '53729234a8822893uha09uf3'
-    }]
-  }
+var locationListCtrl = function ($scope, loc8rData, geolocation) {
+  $scope.message = 'Checking your location...';
+
+  $scope.getData = function(position) {
+    var lat = position.coords.latitude,
+        lng = position.coords.longitude;
+    $scope.message = 'Searching for nearby places...';
+    loc8rData.locationByCoords(lat, lng)
+      .success(function(data) {
+        $scope.message = data.length > 0 ? '' : 'No locations found.';
+        $scope.data = {
+          locations: data
+        };
+      })
+      .error(function(e) {
+        $scope.message = 'Sorry, something\'s gone wrong';
+        console.log(e);
+      });
+  };
+
+  $scope.showError = function(error) {
+    $scope.$apply(function() {
+      $scope.message = error.message;
+    });
+  };
+
+  $scope.noGeo = function() {
+    $scope.$apply(function() {
+      $scope.message = 'Geolocation is not supported by this browser.';
+    });
+  };
+
+  geolocation.getPosition($scope.getData, $scope.showError, $scope.noGeo);
+  
 };
 
 var isNumeric = function(n) {
@@ -64,8 +66,33 @@ var ratingStars = function() {
   };
 };
 
+var loc8rData = function($http) {
+  var locationByCoords = function(lat, lng) {
+    return $http.get('/api/locations?lng=' + lng + '&lat=' + lat);
+  };
+  return {
+    locationByCoords: locationByCoords
+  };
+};
+
+var geolocation = function() {
+  var getPosition = function(cbSuccess, cbError, cbNoGeo) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(cbSuccess, cbError);
+    }
+    else {
+      cbNoGeo();
+    }
+  };
+  return {
+    getPosition: getPosition
+  };
+};
+
 angular
   .module('loc8rApp')
   .controller('locationListCtrl', locationListCtrl)
   .filter('formatDistance', formatDistance)
-  .directive('ratingStars', ratingStars);
+  .directive('ratingStars', ratingStars)
+  .service('loc8rData', loc8rData)
+  .service('geolocation', geolocation);
